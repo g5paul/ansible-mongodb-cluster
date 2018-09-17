@@ -18,6 +18,7 @@ security:
 
 net:
   port: {{ mongod_port }}
+  bindIpAll: true
 
 replication:
   replSetName: {{ inventory_hostname }}

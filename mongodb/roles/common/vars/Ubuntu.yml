@@ -1,0 +1,15 @@
+---
+
+url_apt_key: "keyserver.ubuntu.com"
+id_apt_key: 9DA31620334BD75D9DCB49F368818C72E52529D4
+mongodb_repository: "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu {{ ansible_distribution_release }}/mongodb-org/{{ mongodb_version_repo }} multiverse"
+
+mongodb_packages_dependencies:
+  - python-pip
+
+mongodb_packages:
+  - mongodb-org={{mongodb_version}}
+  - mongodb-org-server={{mongodb_version}}
+  - mongodb-org-shell={{mongodb_version}}
+  - mongodb-org-mongos={{mongodb_version}}
+  - mongodb-org-tools={{mongodb_version}}

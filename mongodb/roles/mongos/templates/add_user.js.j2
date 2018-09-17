@@ -1,0 +1,13 @@
+db.createUser({
+  user: 'admin',
+  pwd: '{{mongo_admin_pass}}',
+  roles : [
+    'userAdminAnyDatabase',
+    'dbAdminAnyDatabase',
+    'readWriteAnyDatabase',
+    'clusterAdmin',
+    'backup',
+    'restore'
+  ]
+});
+

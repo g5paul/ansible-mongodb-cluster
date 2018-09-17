@@ -1,0 +1,20 @@
+---
+
+mongodb_repo_baseurl: https://repo.mongodb.org/yum/redhat/{{ ansible_distribution_major_version }}/mongodb-org/{{ mongodb_version_repo }}/x86_64/
+mongodb_repo_gpgcheck: yes
+mongodb_repo_gpgkey: https://www.mongodb.org/static/pgp/server-{{ mongodb_version_repo }}.asc
+
+mongodb_packages_dependencies:
+  - libselinux-python
+  - policycoreutils-python
+  - python-pip
+
+mongodb_packages:
+  - mongodb-org-{{mongodb_version}}
+  - mongodb-org-{{mongodb_version}}
+  - mongodb-org-shell-{{mongodb_version}}
+  - mongodb-org-mongos-{{mongodb_version}}
+  - mongodb-org-tools-{{mongodb_version}}
+
+#mongodb_additional_packages:
+#  - 

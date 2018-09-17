@@ -1,0 +1,28 @@
+---
+
+- name: Include distribution-specific variables [Ubuntu].
+  include_vars: "{{ ansible_distribution }}.yml"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install any necessary dependencies [Debian/Ubuntu]
+  apt: pkg={{ item }} state=present
+  with_items: "{{ mongodb_packages_dependencies | default([]) }}"
+
+- name: Add Debian apt signing key
+  apt_key: 
+    url: "{{ url_apt_key }}"
+    state: present
+  when: ansible_distribution == 'Debian'
+
+- name: Add Ubuntu apt signing key by id
+  apt_key:
+    keyserver: "{{ url_apt_key }}"
+    id: "{{ id_apt_key }}"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add Mongodb repository [Debian/Ubuntu]
+  apt_repository: repo='{{ mongodb_repository }}' update_cache=yes
+
+- name: Install mongodb packages [Debian/Ubuntu]
+  apt: pkg={{ item }} state=present force=yes
+  with_items: "{{ mongodb_packages }}"

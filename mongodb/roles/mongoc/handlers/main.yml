@@ -1,0 +1,7 @@
+---
+- name: reload mongoc
+  service: name=mongoc state=reloaded
+
+- name: restart mongoc
+  service: name=mongoc state=restarted
+

@@ -1,9 +1,14 @@
 # The global variable file mongodb installation
 
-mongodb_version: 3.2.11
-
-# The chunksize for shards in MB
-mongos_chunk_size: 1
+# Pick a Mongo version below
+#
+# Mongo 3.6
+#mongodb_version_repo: 3.6
+#mongodb_version: 3.6.7
+#
+# Mongo 4.0
+mongodb_version_repo: 4.0
+mongodb_version: 4.0.2
 
 # The port in which mongos server should listen on 
 mongos_port: 27017
@@ -14,6 +19,8 @@ mongoc_port: 7777
 # The directory prefix where the database files would be stored
 mongodb_datadir_prefix: /data/
 
+# NOTE: currently mongod, mongoc, mongos bind to all IP addresses
+#
 # The interface where the mongodb process should listen on.
 # Defaults to the first interface. Change this to:
 # 
@@ -21,8 +28,9 @@ mongodb_datadir_prefix: /data/
 #
 # ...to override.
 # 
-iface: '{{ ansible_default_ipv4.interface }}'
+#iface: '{{ ansible_default_ipv4.interface }}'
+#
+
 
 # The password for admin user
 mongo_admin_pass: 123456
-

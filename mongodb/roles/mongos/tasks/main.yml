@@ -1,26 +1,72 @@
 ---
 #This Playbook configures the mongos service of mongodb
 
-- name: Create the mongos startup file
-  template: src=mongos.service.j2 dest=/etc/systemd/system/mongos.service mode=0655 seuser=system_u
-
-- name: Create the mongos configuration file
-  template: src=mongos.conf.j2 dest=/etc/mongos.conf
+- name: Create the mongos server startup file
+  template: src=mongos.service.j2 dest=/etc/systemd/system/mongos.service mode=0644 seuser=system_u
 
 - name: Copy the keyfile for authentication
-  copy: src=roles/mongod/files/secret dest={{ mongodb_datadir_prefix }}/secret owner=mongod group=mongod mode=0400
+  copy:
+    src: roles/mongod/files/secret
+    dest: "{{ mongodb_datadir_prefix }}/secret"
+    owner: mongod
+    group: mongod
+    mode: 0400
+    setype: mongod_var_lib_t
 
-- name: Start the mongodb service
+- name: Create the mongos server configuration file
+  template: src=mongos.conf.j2 dest=/etc/mongos.conf
+  notify: restart mongos
+
+- name: Start the mongos server service
   systemd: name=mongos state=started daemon_reload=yes enabled=yes
 
 - wait_for:
     port: "{{ mongos_port }}"
     delay: 3
 
-- name: Copy the file enable  sharding
+- name: Copy the file to add user admin
+  template: src=add_user.js.j2 dest=/tmp/add_user.js
+  when: "inventory_hostname == groups['mongos_servers'][0]"
+
+#- name: Check if some user is not there already - try to get user list as anonymous
+#  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin" --eval 'db.getUsers()'
+#  ignore_errors: true
+#  register: getusers
+#  changed_when: false
+
+- name: Add admin user
+  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin" /tmp/add_user.js
+  when: "inventory_hostname == groups['mongos_servers'][0] and mongo_adduser=='true'"
+##  when: "inventory_hostname == groups['mongos_servers'][0] and getusers.rc ==0"
+
+#- name: Run without authentication
+#  mongodb_user:
+#    database: admin
+#    name: "admin"
+#    password: "{{ mongo_admin_pass }}"
+#    state: present
+#    login_port: "{{ mongos_port }}"
+#    roles: "readWriteAnyDatabase, dbAdminAnyDatabase, userAdminAnyDatabase, clusterAdmin, restore, backup"
+#  when: getusers.rc ==0
+
+#- name: Run with authentication
+#  mongodb_user:
+#    database: admin
+#    name: "admin"
+#    password: "{{ mongo_admin_pass }}"
+#    state: present
+#    login_port: "{{ mongos_port }}"
+#    roles: "readWriteAnyDatabase, dbAdminAnyDatabase, userAdminAnyDatabase, clusterAdmin, restore, backup"
+#    login_database: admin
+#    login_user: "admin"
+#    login_password: "{{ mongo_admin_pass }}"
+#  when: getusers.rc != 0
+
+- name: Copy the file to enable sharding
   template: src=mongos_init.js.j2 dest=/tmp/mongos_init.js
-  when: "{{inventory_hostname == groups['mongos_servers'][0]}}"
+  when: "inventory_hostname == groups['mongos_servers'][0]"
 
 - name: Create sharding
-  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin" /tmp/mongos_init.js
-  when: "{{inventory_hostname == groups['mongos_servers'][0]}}"
+  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin"  /tmp/mongos_init.js -u admin -p {{mongo_admin_pass}}
+  when: "inventory_hostname == groups['mongos_servers'][0]"
+

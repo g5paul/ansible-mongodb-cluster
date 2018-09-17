@@ -5,6 +5,12 @@ After=network.target
 [Service]
 User=mongod
 Type=forking
+
+# Run ExecStartPre with root-permissions
+PermissionsStartOnly=true
+ExecStartPre=-/bin/mkdir -p /var/run/mongo
+ExecStartPre=/bin/chown -R mongod:mongod /var/run/mongo/
+
 ExecStart=/usr/bin/mongod --quiet --config /etc/mongoc.conf
 
 [Install]

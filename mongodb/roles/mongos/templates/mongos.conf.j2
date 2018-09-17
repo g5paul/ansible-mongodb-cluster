@@ -6,15 +6,15 @@ systemLog:
 
 processManagement:
   fork: true
-  pidFilePath: /var/run/mongodb/mongos.pid
+  pidFilePath: /var/run/mongo/mongos.pid
 
 net:
   port: {{ mongos_port }}
+  bindIpAll: true
 
 security:
   keyFile: {{ mongodb_datadir_prefix }}/secret
 
 sharding:
-   chunkSize: {{ mongos_chunk_size }}
    configDB: "mongoc/{{configDB}}"
 

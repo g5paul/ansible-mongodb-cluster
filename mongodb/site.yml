@@ -17,7 +17,9 @@
   roles:
   - role: mongos
 
-# run shading test
-- include: shard_test.yml
+# run sharding test
+#- include: shard_test.yml
 
+  vars:
+    mongo_adduser: 'true'
 

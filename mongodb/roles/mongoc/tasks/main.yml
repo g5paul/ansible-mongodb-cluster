@@ -1,14 +1,11 @@
 ---
-# This playbook  deploys the mongodb configurationdb  servers
+# This playbook  deploys the mongodb configuration  servers
 
 - name: Create data directory for mongoc configuration server
   file: path={{ mongodb_datadir_prefix }}/configdb state=directory owner=mongod group=mongod
 
-- name: Create the mongodb startup file
+- name: Create the mongoc configuration server startup file
   template: src=mongoc.service dest=/etc/systemd/system/mongoc.service mode=0644 seuser=system_u
-
-- name: Create the mongodb configuration file
-  template: src=mongoc.conf.j2 dest=/etc/mongoc.conf
 
 - name: Copy the keyfile for authentication
   copy:
@@ -19,28 +16,26 @@
     mode: 0400
     setype: mongod_var_lib_t
 
-- name: Start the mongodb service
+- name: Create the mongoc configuration server configuration file
+  template: src=mongoc.conf.j2 dest=/etc/mongoc.conf
+  notify: restart mongoc
+
+- name: Start the mongoc configuration server service
   systemd: name=mongoc state=started daemon_reload=yes enabled=yes
 
 - wait_for:
     port: "{{ mongoc_port }}"
     delay: 3
 
-- name: Create the file to initialize mongo user
+- name: Create the file to initialize mongoc replica set
   template: src=mongoc_init.js.j2 dest=/tmp/mongoc_init.js
-  when: "{{inventory_hostname == groups['mongoc_servers'][0]}}"
+  when: "inventory_hostname == groups['mongoc_servers'][0]"
 
-- name: Create admin User
+- name: Intialize mongoc replica set
   shell: /usr/bin/mongo "localhost:{{ mongoc_port }}/admin" /tmp/mongoc_init.js
-  when: "{{inventory_hostname == groups['mongoc_servers'][0]}}"
+  when: "inventory_hostname == groups['mongoc_servers'][0]"
   ignore_errors: yes
 
-#- name: add the admin user
-#  mongodb_user:
-#    login_database: admin
-#    login_port: "{{ mongoc_port }}"
-#    database: admin
-#    name: admin
-#    password: "{{ mongo_admin_pass }}"
-#    state: present
-#  ignore_errors: yes
+
+
+

@@ -6,13 +6,8 @@
   delegate_to: '{{ item }}'
   with_items: "{{groups.replication_servers}}"
 
-- name: Create the mongodb startup file
+- name: Create the mongod server startup file
   template: src=mongod.service.j2 dest=/etc/systemd/system/mongod-{{ inventory_hostname }}.service mode=0644 seuser=system_u
-  delegate_to: '{{ item }}'
-  with_items: "{{groups.replication_servers}}"
-
-- name: Create the mongodb configuration file
-  template: src=mongod.conf.j2 dest=/etc/mongod-{{ inventory_hostname }}.conf
   delegate_to: '{{ item }}'
   with_items: "{{groups.replication_servers}}"
 
@@ -25,7 +20,13 @@
     mode: 0400
     setype: mongod_var_lib_t
 
-- name: Start the mongodb service
+- name: Create the mongod server configuration file
+  template: src=mongod.conf.j2 dest=/etc/mongod-{{ inventory_hostname }}.conf
+  delegate_to: '{{ item }}'
+  with_items: "{{groups.replication_servers}}"
+  notify: restart mongod
+
+- name: Start the mongod server service
   systemd: name=mongod-{{ inventory_hostname }} state=started daemon_reload=yes enabled=yes
   delegate_to: '{{ item }}'
   with_items: "{{groups.replication_servers}}"
@@ -37,7 +38,7 @@
 - name: Create the file to initialize the mongod replica set
   template: src=mongod_init.js.j2 dest=/tmp/mongod_init.js
 
-- name: Initialize the replication set
+- name: Initialize the mongod replication set
   shell: /usr/bin/mongo "localhost:{{ mongod_port }}/admin" /tmp/mongod_init.js
   ignore_errors: yes
 

@@ -1,0 +1,7 @@
+---
+- name: reload mongod
+  service: name=mongod-{{ inventory_hostname }} state=reloaded
+
+- name: restart mongod
+  service: name=mongod-{{ inventory_hostname }} state=restarted
+

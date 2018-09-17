@@ -1,8 +1,14 @@
-- name: Copy the test script
+- name: Copy enable test shard script
+  template: src=enable_test_shard.js.j2 dest=/tmp/enable_test_shard.js
+
+- name: Run enable test shard script
+  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin"  /tmp/enable_test_shard.js -u admin -p {{mongo_admin_pass}}
+
+- name: Copy the test shard script
   template: src=shard_test.js dest=/tmp/shard_test.js
 
-- name: Run test script
-  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/test" /tmp/shard_test.js -u admin -p {{mongo_admin_pass}}
+- name: Run test shard script
+  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/test" /tmp/shard_test.js -u testadmin -p {{mongo_admin_pass}}
   register: shard_test_result
 
 - debug: msg={{shard_test_result.stdout}}

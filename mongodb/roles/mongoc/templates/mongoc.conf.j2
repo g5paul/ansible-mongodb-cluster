@@ -10,6 +10,7 @@ processManagement:
 
 net:
   port: {{ mongoc_port }}
+  bindIpAll: true
 
 storage:
   dbPath: {{ mongodb_datadir_prefix }}configdb
