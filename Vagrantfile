@@ -40,7 +40,7 @@ Vagrant.configure("2") do |config|
               "mongos_servers" => ["mongo1", "mongo2"]
             }
             ansible.extra_vars = {
-              mongo_adduser: "true",
+              mongo_addusers: "true",
             }
           end
         end

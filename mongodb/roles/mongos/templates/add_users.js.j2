@@ -1,0 +1,18 @@
+
+is_master = db.isMaster().ismaster;
+print("Node is_master:" + is_master)
+if (is_master) {
+db.createUser({
+  user: 'admin',
+  pwd: '{{mongo_admin_pass}}',
+  roles : [
+    'userAdminAnyDatabase',
+    'dbAdminAnyDatabase',
+    'readWriteAnyDatabase',
+    'clusterAdmin',
+    'backup',
+    'restore'
+  ]
+});
+}
+

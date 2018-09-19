@@ -20,6 +20,6 @@
 # run sharding test
 #- include: shard_test.yml
 
-  vars:
-    mongo_adduser: 'true'
+
+
 

@@ -66,7 +66,7 @@ Run the shard test playbook using the following command:
 
 Update the site by mongodb playbook using the following command:
 
-		ansible-playbook -i ./mongodb/hosts  ./mongodb/site.yml --extra-vars "mongo_adduser=false"		
+		ansible-playbook -i ./mongodb/hosts  ./mongodb/site.yml --extra-vars "mongo_addusers=false"		
 
 Build the site by **vagrant ansible provision** using the following command:
 

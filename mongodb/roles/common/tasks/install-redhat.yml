@@ -1,14 +1,17 @@
 ---
 
 - name: Install epel-release [CentOS]
+  tags: [common, centos]
   yum: name=epel-release state=present
   when: ansible_distribution == 'CentOS'
 
 - name: Install any necessary dependencies [RedHat/CentOS]
+  tags: [common, centos, redhat]
   yum: name={{ item }} state=present
   with_items: "{{ mongodb_packages_dependencies | default([]) }}"
 
 - name: Add mongodb repository [RHEL/CentOS]
+  tags: [common, centos, redhat]
   yum_repository:
     name: mongodb-org-{{ mongodb_version_repo }}
     description: MongoDB Repository
@@ -17,9 +20,11 @@
     gpgkey: "{{ mongodb_repo_gpgkey }}"
 
 - name: Install mongodb packages [RHEL/CentOS]
+  tags: [common, centos, redhat]
   yum: name={{ item }} state=present
   with_items: "{{ mongodb_packages }}"
 
 - name: Install additional packages [RHEL/CentOS]
+  tags: [common, centos, redhat]
   yum: name={{ item }} state=present
   with_items: "{{ mongodb_additional_packages | default([]) }}"

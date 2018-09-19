@@ -3,11 +3,13 @@
 # This Playbook runs all the common plays in the deployment
 
 - name: Include OS-specific variables.
+  tags: [common]
   include_vars: "{{ ansible_os_family }}.yml"
 
 - include: "install-{{ ansible_os_family | lower }}.yml"
 
 - name: Enable ports 2700-2703 On SELinux
+  tags: [common]
   seport:
     ports: "2700-2703,{{mongos_port}},{{mongoc_port}}"
     proto: tcp
@@ -16,17 +18,22 @@
   when: ansible_selinux is defined and ansible_selinux != False and ansible_selinux.status == 'enabled'
     
 - name: Create the mongod user
+  tags: [common]
   user: name=mongod comment="MongoD"
 
 - name: Install the latest pymongo package
+  tags: [common]
   pip: name=pymongo state=latest use_mirrors=no
 
 - name: Create the data directory for the namenode metadata
+  tags: [common]
   file: path={{ mongodb_datadir_prefix }} owner=mongod group=mongod state=directory setype=mongod_var_lib_t recurse=true
 
 - name: create /var/log/mongo directory for mongodb
+  tags: [common]
   file: path=/var/log/mongo state=directory owner=mongod group=mongod setype=mongod_log_t recurse=true
 
 - name: create /var/run/mongo directory for mongodb
+  tags: [common]
   file: path=/var/run/mongo state=directory owner=mongod group=mongod setype=mongod_var_run_t seuser=system_u recurse=true
 

@@ -3,6 +3,11 @@
 
 - name: Run enable test shard script
   shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin"  /tmp/enable_test_shard.js -u admin -p {{mongo_admin_pass}}
+  register: enable_test_shard_result
+
+- debug: 
+    var: enable_test_shard_result
+    verbosity: 1
 
 - name: Copy the test shard script
   template: src=shard_test.js dest=/tmp/shard_test.js
@@ -11,4 +16,5 @@
   shell: /usr/bin/mongo "localhost:{{ mongos_port }}/test" /tmp/shard_test.js -u testadmin -p {{mongo_admin_pass}}
   register: shard_test_result
 
-- debug: msg={{shard_test_result.stdout}}
+- debug: 
+    var: shard_test_result

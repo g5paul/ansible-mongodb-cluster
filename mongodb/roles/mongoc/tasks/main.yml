@@ -2,12 +2,15 @@
 # This playbook  deploys the mongodb configuration  servers
 
 - name: Create data directory for mongoc configuration server
+  tags: [mongoc]
   file: path={{ mongodb_datadir_prefix }}/configdb state=directory owner=mongod group=mongod
 
 - name: Create the mongoc configuration server startup file
+  tags: [mongoc]
   template: src=mongoc.service dest=/etc/systemd/system/mongoc.service mode=0644 seuser=system_u
 
 - name: Copy the keyfile for authentication
+  tags: [mongoc]
   copy:
     src: roles/mongod/files/secret
     dest: "{{ mongodb_datadir_prefix }}/secret"
@@ -17,10 +20,12 @@
     setype: mongod_var_lib_t
 
 - name: Create the mongoc configuration server configuration file
+  tags: [mongoc]
   template: src=mongoc.conf.j2 dest=/etc/mongoc.conf
   notify: restart mongoc
 
 - name: Start the mongoc configuration server service
+  tags: [mongoc]
   systemd: name=mongoc state=started daemon_reload=yes enabled=yes
 
 - wait_for:
@@ -28,13 +33,21 @@
     delay: 3
 
 - name: Create the file to initialize mongoc replica set
+  tags: [mongoc, mongoc-init-replica-set]
   template: src=mongoc_init.js.j2 dest=/tmp/mongoc_init.js
   when: "inventory_hostname == groups['mongoc_servers'][0]"
 
 - name: Intialize mongoc replica set
+  tags: [mongoc, mongoc-init-replica-set]
   shell: /usr/bin/mongo "localhost:{{ mongoc_port }}/admin" /tmp/mongoc_init.js
+  register: mongoc_init_replica_set_result
   when: "inventory_hostname == groups['mongoc_servers'][0]"
   ignore_errors: yes
+
+- debug:
+    var: mongoc_init_replica_set_result
+    verbosity: 1
+
 
 
 

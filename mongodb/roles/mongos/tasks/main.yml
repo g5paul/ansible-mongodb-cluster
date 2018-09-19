@@ -2,9 +2,11 @@
 #This Playbook configures the mongos service of mongodb
 
 - name: Create the mongos server startup file
+  tags: [mongos]
   template: src=mongos.service.j2 dest=/etc/systemd/system/mongos.service mode=0644 seuser=system_u
 
 - name: Copy the keyfile for authentication
+  tags: [mongos]
   copy:
     src: roles/mongod/files/secret
     dest: "{{ mongodb_datadir_prefix }}/secret"
@@ -14,30 +16,41 @@
     setype: mongod_var_lib_t
 
 - name: Create the mongos server configuration file
+  tags: [mongos]
   template: src=mongos.conf.j2 dest=/etc/mongos.conf
   notify: restart mongos
 
 - name: Start the mongos server service
+  tags: [mongos]
   systemd: name=mongos state=started daemon_reload=yes enabled=yes
 
 - wait_for:
     port: "{{ mongos_port }}"
     delay: 3
 
-- name: Copy the file to add user admin
-  template: src=add_user.js.j2 dest=/tmp/add_user.js
+- name: Copy the file to add users to mongos
+  tags: [mongos, mongos-add-users]
+  template: src=add_users.js.j2 dest=/tmp/add_users.js
   when: "inventory_hostname == groups['mongos_servers'][0]"
 
 #- name: Check if some user is not there already - try to get user list as anonymous
+#  tags: [mongos, mongos-add-users]
 #  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin" --eval 'db.getUsers()'
 #  ignore_errors: true
 #  register: getusers
 #  changed_when: false
 
-- name: Add admin user
-  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin" /tmp/add_user.js
-  when: "inventory_hostname == groups['mongos_servers'][0] and mongo_adduser=='true'"
-##  when: "inventory_hostname == groups['mongos_servers'][0] and getusers.rc ==0"
+- name: Add users to mongos
+  tags: [mongos, mongos-add-users]
+  shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin" /tmp/add_users.js
+  when: "inventory_hostname == groups['mongos_servers'][0] and mongo_addusers==true"
+  register: mongos_add_users_result
+  ignore_errors: true
+#  when: "inventory_hostname == groups['mongos_servers'][0] and getusers.rc ==0"
+
+- debug:
+    var: mongos_add_users_result
+    verbosity: 1
 
 #- name: Run without authentication
 #  mongodb_user:
@@ -62,11 +75,18 @@
 #    login_password: "{{ mongo_admin_pass }}"
 #  when: getusers.rc != 0
 
-- name: Copy the file to enable sharding
+- name: Copy the file to setup sharding
+  tags: [mongos, mongos-setup-sharding]
   template: src=mongos_init.js.j2 dest=/tmp/mongos_init.js
   when: "inventory_hostname == groups['mongos_servers'][0]"
 
 - name: Create sharding
+  tags: [mongos, mongos-setup-sharding]
   shell: /usr/bin/mongo "localhost:{{ mongos_port }}/admin"  /tmp/mongos_init.js -u admin -p {{mongo_admin_pass}}
+  register: mongos_setup_sharding_result
   when: "inventory_hostname == groups['mongos_servers'][0]"
+
+- debug:
+    var: mongos_setup_sharding_result
+    verbosity: 1
 

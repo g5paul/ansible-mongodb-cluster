@@ -2,16 +2,19 @@
 # This role deploys the mongod processes and sets up the replication set.
 
 - name: create data directory for mongodb
+  tags: [mongod]
   file: path={{ mongodb_datadir_prefix }}/mongo-{{ inventory_hostname }} state=directory owner=mongod group=mongod
   delegate_to: '{{ item }}'
   with_items: "{{groups.replication_servers}}"
 
 - name: Create the mongod server startup file
+  tags: [mongod]
   template: src=mongod.service.j2 dest=/etc/systemd/system/mongod-{{ inventory_hostname }}.service mode=0644 seuser=system_u
   delegate_to: '{{ item }}'
   with_items: "{{groups.replication_servers}}"
 
 - name: Copy the keyfile for authentication
+  tags: [mongod]
   copy:
     src: secret
     dest: "{{ mongodb_datadir_prefix }}/secret"
@@ -21,12 +24,14 @@
     setype: mongod_var_lib_t
 
 - name: Create the mongod server configuration file
+  tags: [mongod]
   template: src=mongod.conf.j2 dest=/etc/mongod-{{ inventory_hostname }}.conf
   delegate_to: '{{ item }}'
   with_items: "{{groups.replication_servers}}"
   notify: restart mongod
 
 - name: Start the mongod server service
+  tags: [mongod]
   systemd: name=mongod-{{ inventory_hostname }} state=started daemon_reload=yes enabled=yes
   delegate_to: '{{ item }}'
   with_items: "{{groups.replication_servers}}"
@@ -36,9 +41,49 @@
     delay: 5
 
 - name: Create the file to initialize the mongod replica set
+  tags: [mongod, mongod-init-replica-set]
   template: src=mongod_init.js.j2 dest=/tmp/mongod_init.js
 
 - name: Initialize the mongod replication set
+  tags: [mongod, mongod-init-replica-set]
   shell: /usr/bin/mongo "localhost:{{ mongod_port }}/admin" /tmp/mongod_init.js
+  register: mongod_init_replica_set_result
   ignore_errors: yes
+
+- debug:
+    var: mongod_init_replica_set_result
+    verbosity: 1
+
+- name: Copy the file to add users to mongod
+  tags: [mongod, mongod-add-users]
+  template: src=../../mongos/templates/add_users.js.j2 dest=/tmp/add_users.js
+
+#- name: Check if master
+#  tags: [mongod, mongod-add-users]
+#  shell: /usr/bin/mongo "localhost:{{ mongod_port }}/admin" --quiet --eval 'db.isMaster().ismaster'
+#  delegate_to: '{{ item }}'
+#  with_items: "{{groups.replication_servers}}"
+#  ignore_errors: true
+#  register: is_master
+#  changed_when: false
+
+#- debug: 
+#    var: is_master
+#    verbosity: 1
+
+- name: wait for at least 15 seconds for replicas to elect a primary
+  wait_for: timeout=15
+
+- name: Add users to mongod replication servers
+  tags: [mongod, mongod-add-users]
+  shell: /usr/bin/mongo "localhost:{{ mongod_port }}/admin" /tmp/add_users.js
+  delegate_to: '{{ item }}'
+  with_items: "{{groups.replication_servers}}"
+  register: mongod_add_users_result
+  when: mongo_addusers==true
+  ignore_errors: yes
+
+- debug:
+    var: mongod_add_users_result
+    verbosity: 1
 

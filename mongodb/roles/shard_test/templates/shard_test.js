@@ -1,4 +1,4 @@
-
+print("Generating and inserting data to user collection");
 var people = ["Marc", "Bill", "George", "Eliot", "Matt", "Trey", "Tracy", "Greg", "Steve", "Kristina", "Katie", "Jeff"];
 for (var i = 0; i < 5000; i ++ ) {
   var name = people[Math.floor(Math.random()*people.length)],
@@ -6,7 +6,7 @@ for (var i = 0; i < 5000; i ++ ) {
 
   db.user.save({ _id: i, name: name, age : age });
 }
-
+print("Generating and inserting data to messages collection");
 var messages = ["Hello there", "Good Morning", "valar morghulis"];
 var createTime = new Date();
 for (var j = 0; j < 5000; j ++) {
@@ -15,7 +15,7 @@ for (var j = 0; j < 5000; j ++) {
     userid: Math.floor(Math.random()*5000),
     message: messages[Math.floor(Math.random()*messages.length)],
     createTime: createTime
-  })
+  });
 }
 
 db.messages.ensureIndex({createTime: 1});
