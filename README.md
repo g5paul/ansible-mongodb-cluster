@@ -6,6 +6,9 @@ Example of Deploying a MongoDB (3.6+/4.0+) sharded cluster with Ansible (2.6.3+)
 - Tested with Ubuntu 16.04/xenial
 - Tested with Debian 9/stretch
 - Vagrant support tested with 1.9.8
+- Terrafrom support test with Terraform v0.11.8
+   - provider.aws v1.36.0
+   - provider.google v1.17.1
 
 Example forked from  [ansible mongodb cluster](https://github.com/twoyao/ansible-mongodb-cluster) which was originally re-written from [ansible mongodb example](https://github.com/ansible/ansible-examples/tree/master/mongodb). Example updated with support for mongodb 3.6.7 & 4.0.2, ansible 2.6.3, CentOS 7, Ubuntu 16.04/xenial and Debian 9/stretch. Added terraform examples for AWS and Google Cloud.
 
