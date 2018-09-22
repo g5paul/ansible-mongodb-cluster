@@ -7,7 +7,7 @@ Example of Deploying a MongoDB (3.6+/4.0+) sharded cluster with Ansible (2.6.3+)
 - Tested with Debian 9/stretch
 - Vagrant support tested with 1.9.8
 
-Example forked from  [ansible mongodb cluster](https://github.com/twoyao/ansible-mongodb-cluster) which was originally re-written from [ansible mongodb example](https://github.com/ansible/ansible-examples/tree/master/mongodb). Example updated with support for mongodb 3.6.7 & 4.0.2, ansible 2.6.3, CentOS 7, Ubuntu 16.04/xenial and Debian 9/stretch.
+Example forked from  [ansible mongodb cluster](https://github.com/twoyao/ansible-mongodb-cluster) which was originally re-written from [ansible mongodb example](https://github.com/ansible/ansible-examples/tree/master/mongodb). Example updated with support for mongodb 3.6.7 & 4.0.2, ansible 2.6.3, CentOS 7, Ubuntu 16.04/xenial and Debian 9/stretch. Added terraform examples for AWS and Google Cloud.
 
 ![Alt text](images/site.png "Site")
 
@@ -23,7 +23,8 @@ servers are co-located with the shards. The mongos servers are best deployed on 
   - The default directory for storing data is /data, please do change it if required. Make sure it has sufficient space: 10G is recommended.
 - Set a unique mongod_port variable in the inventory file for each MongoDB server.
 - If using Vagrant to provision a local cluster edit the 'Vagrantfile' and set distribution to use with 'node.vm.box' and proper vm box memory settings with 'vb.memory'.
--  **Note** that all the processes are secured using [keyfiles](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/) which is fine for a dev/testing environment. Production environments should consider using [X.509 Certificates](https://docs.mongodb.com/manual/core/security-x.509/). 
+- If using Terraform to provision a cluster in AWS or Google Cloud edit the 'vars.tf', 'main.tf' and corresponding hosts file './mongodb/hosts-aws-dev' or './mongodb/hosts-gce-dev'.
+- **Note** that all the processes are secured using [keyfiles](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/) which is fine for a dev/testing environment. Production environments should consider using [X.509 Certificates](https://docs.mongodb.com/manual/core/security-x.509/). 
 - **Note** that all the processes bind to all IP addresses. Consider [enabling access control](https://docs.mongodb.com/manual/administration/security-checklist/#checklist-auth) and other security measures listed in [Security Checklist](https://docs.mongodb.com/manual/administration/security-checklist/) to prevent unauthorized access.
 
 
@@ -58,23 +59,49 @@ The inventory file looks as follows:
 
 Build the site by mongodb playbook using the following command:
 
-		ansible-playbook -i ./mongodb/hosts ./mongodb/site.yml
+	ansible-playbook -i ./mongodb/hosts ./mongodb/site.yml
 
 Run the shard test playbook using the following command:
 
-		ansible-playbook -i ./mongodb/hosts ./mongodb/shard_test.yml
+	ansible-playbook -i ./mongodb/hosts ./mongodb/shard_test.yml
 
 Update the site by mongodb playbook using the following command:
 
-		ansible-playbook -i ./mongodb/hosts  ./mongodb/site.yml --extra-vars "mongo_addusers=false"		
+	ansible-playbook -i ./mongodb/hosts  ./mongodb/site.yml --extra-vars "mongo_addusers=false"		
 
 Build the site by **vagrant ansible provision** using the following command:
 
-		vagrant up		
+	vagrant up		
 
 Run the shard test playbook on local vagrant hosts using the following commands:
 
-		ansible-playbook -i ./mongodb/hosts-vagrant  ./mongodb/shard_test.yml
+	ansible-playbook -i ./mongodb/hosts-vagrant  ./mongodb/shard_test.yml
+
+Provision the site by **terraform** using the following commands:
+
+	Google Cloud:
+	  terraform plan  --target=google_compute_instance.gce-mongo-1
+	  terraform apply --target=google_compute_instance.gce-mongo-1
+
+	AWS Cloud:
+	  terraform plan  --target=aws_instance.ec2-mongo-1
+	  terraform apply --target=aws_instance.ec2-mongo-1
+
+Build the site by **provsioned by terraform** using the following command:
+
+	Google Cloud:
+	  ansible-playbook -i ./mongodb/hosts-gce-dev ./mongodb/site.yml
+
+	AWS Cloud:
+	  ansible-playbook -i ./mongodb/hosts-aws-dev ./mongodb/site.yml
+
+Run the shard test playbook on cloud hosts using the following commands:
+
+	Google Cloud:
+	  ansible-playbook -i ./mongodb/hosts-gce-dev ./mongodb/shard_test.yml --extra-vars "mongos_host=<insert mongos hostname from ./mongodb/hosts-gce-dev>"
+
+	AWS Cloud:
+	  ansible-playbook -i ./mongodb/hosts-aws-dev ./mongodb/shard_test.yml --extra-vars "mongos_host=<insert mongos hostname from ./mongodb/hosts-aws-dev>"
 
 ### Verifying the Deployment  
 ------------------------------------------------------------------------------
@@ -129,7 +156,7 @@ and issue the command to query the status of replication set, we should get a si
                             { "_id" : NumberLong(0) } -->> { "_id" : NumberLong("3074457345618258602") } on : mongo2 Timestamp(3, 5) 
                             { "_id" : NumberLong("3074457345618258602") } -->> { "_id" : NumberLong("6148914691236517204") } on : mongo3 Timestamp(3, 6) 
                             { "_id" : NumberLong("6148914691236517204") } -->> { "_id" : { "$maxKey" : 1 } } on : mongo3 Timestamp(3, 7) 
-    
+
 
 
 We can check the status of the shards as follows: connect to the mongos service `mongo localhost/test -u admin -p 123456` 
@@ -177,4 +204,4 @@ and issue the following command to get the status of the Shards:
     		}
     	}
     }
-    
+

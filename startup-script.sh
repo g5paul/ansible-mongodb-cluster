@@ -31,22 +31,31 @@ else
     VER=$(uname -r)
 fi
 
-echo "OS is $OS and VER is $VER" | tee -a /tmp/bootstrap-out.txt
+echo "OS is $OS and VER is $VER" | tee -a /tmp/startup-script-out.txt
 
 # Install python on Ubuntu (16.04)
 if [ "$OS" = "Ubuntu" -a "$VER" = "16.04" ]; then
-   echo "Installing python" | tee -a /tmp/bootstrap-out.txt
-   sudo apt-get -y install python | tee -a /tmp/bootstrap-out.txt
+   echo "Installing python" | tee -a /tmp/startup-script-out.txt
+   sudo apt-get -y install python | tee -a /tmp/startup-script-out.txt
 fi
 
-cat >> /etc/hosts <<EOL
-# vagrant environment nodes
-11.0.0.11 mongo1
-11.0.0.12 mongo2
-11.0.0.13 mongo3
-11.0.0.14 mongo4
-11.0.0.15 mongo5
-11.0.0.16 mongo6
-11.0.0.17 mongo7
-11.0.0.18 mongo8
-EOL
+
+lsblk | tee -a /tmp/startup-script-out.txt
+
+SDB_DEVICE=`lsblk | grep db | cut -d ' ' -f 1`
+mkfs.xfs /dev/$SDB_DEVICE | tee -a /tmp/startup-script-out.txt
+mkdir /data | tee -a /tmp/startup-script-out.txt
+mount /dev/$SDB_DEVICE /data | tee -a /tmp/startup-script-out.txt
+
+if [ "$OS" = "Redhat" ]; then
+  semanage fcontext -a -t  mongod_var_lib_t /data | tee -a /tmp/startup-script-out.txt
+  restorecon -v /data | tee -a /tmp/startup-script-out.txt
+fi
+
+SDB_UUID=`blkid /dev/$SDB_DEVICE | cut -d' ' -f2 | cut -d '"' -f2`
+cp -p /etc/fstab /etc/fstab.bak
+echo "Adding follwing entry to fstab: " 
+echo "UUID=$SDB_UUID /data      xfs     defaults        0 0" | tee -a /etc/fstab /tmp/startup-script-out.txt
+
+
+

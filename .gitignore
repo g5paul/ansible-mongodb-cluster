@@ -1,5 +1,8 @@
 .idea
 .vagrant
+.terraform
+terraform.tfstate
+terraform.tfstate.backup
 packages/*
 mongodb/shard_test.retry
 mongodb/site.retry

@@ -7,6 +7,7 @@ Vagrant.configure("2") do |config|
   N = 3
   (1..N).each do |i|
     config.vm.define "mongo#{i}" do |node|
+        # 1. Set OS Distribution 
         # Centos 7
         node.vm.box = "centos/7"
         # Ubuntu 16.04/xenial
@@ -16,6 +17,7 @@ Vagrant.configure("2") do |config|
         node.vm.hostname = "mongo#{i}"
         node.vm.network :private_network, ip: "11.0.0.1#{i}"
         node.vm.provider "virtualbox" do |vb|
+          # 2. Set memory
           vb.memory = "256" # Centos 
           #vb.memory = "512" # Ubuntu / Debian
         end

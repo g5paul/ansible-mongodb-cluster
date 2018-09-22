@@ -1,0 +1,46 @@
+#
+# Step 1. Set AWS internal host names (i.e. ip-x-x-x-x) and external IP's
+#
+[hosts]
+# NOTE: The AWS internal host names below need to be changed to whatever 
+#       internal hostnames (i.e. ip-x-x-x-x) are assigned to the provisioned nodes.
+ip-172-31-47-149  ansible_host=<ext IP>
+ip-172-31-11-137  ansible_host=<ext IP>
+ip-172-31-68-132  ansible_host=<ext IP>
+
+[hosts:vars]
+ansible_become=yes
+ansible_connection=ssh 
+ansible_port=22 
+# Step 2. Set ansible user and ssh key
+ansible_user=ubuntu 
+ansible_ssh_private_key_file="{{lookup('env', 'HOME')}}/.ssh/us-east-1-dev"
+
+# the mongo servers need a mongod_port variable set, and they must not conflict.
+# NOTE: Set AWS internal host names to match above
+[mongo_servers]
+ip-172-31-47-149 mongod_port=2700
+ip-172-31-11-137 mongod_port=2701
+ip-172-31-68-132 mongod_port=2702
+
+#The list of servers where replication should happen, by default include all servers
+# NOTE: Set AWS internal host names to match above
+[replication_servers]
+ip-172-31-47-149
+ip-172-31-11-137
+ip-172-31-68-132
+
+#The list of mongodb configuration servers, make sure it is 1 or 3
+# NOTE: Set AWS internal host names to match above
+[mongoc_servers]
+ip-172-31-47-149
+ip-172-31-11-137
+ip-172-31-68-132
+
+#The list of servers where mongos servers would run.
+# NOTE: Set AWS internal host names to match above
+[mongos_servers]
+ip-172-31-47-149
+ip-172-31-11-137
+
+

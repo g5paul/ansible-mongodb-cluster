@@ -16,7 +16,7 @@ mongo1
 mongo2
 mongo3
 
-#Te list of servers where mongos servers would run.
+#The list of servers where mongos servers would run.
 [mongos_servers]
 mongo1
 mongo2

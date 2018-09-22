@@ -1,0 +1,40 @@
+#
+# Step 1. Set GCE external host IP's
+#
+[hosts]
+gce-mongo-dev-priv-us-west1-a-0 ansible_host=<ext IP>
+gce-mongo-dev-priv-us-west1-b-1 ansible_host=<ext IP>
+gce-mongo-dev-priv-us-west1-c-2 ansible_host=<ext IP>
+
+[hosts:vars]
+ansible_become=yes
+ansible_connection=ssh 
+ansible_port=22 
+# Step 2. Set ansible user and ssh key
+ansible_user=ubuntu 
+ansible_ssh_private_key_file="{{lookup('env', 'HOME')}}/.ssh/id_rsa_gcp"
+
+# the mongo servers need a mongod_port variable set, and they must not conflict.
+[mongo_servers]
+gce-mongo-dev-priv-us-west1-a-0 mongod_port=2700
+gce-mongo-dev-priv-us-west1-b-1 mongod_port=2701
+gce-mongo-dev-priv-us-west1-c-2 mongod_port=2702
+
+#The list of servers where replication should happen, by default include all servers
+[replication_servers]
+gce-mongo-dev-priv-us-west1-a-0
+gce-mongo-dev-priv-us-west1-b-1
+gce-mongo-dev-priv-us-west1-c-2
+
+#The list of mongodb configuration servers, make sure it is 1 or 3
+[mongoc_servers]
+gce-mongo-dev-priv-us-west1-a-0
+gce-mongo-dev-priv-us-west1-b-1
+gce-mongo-dev-priv-us-west1-c-2
+
+#The list of servers where mongos servers would run.
+[mongos_servers]
+gce-mongo-dev-priv-us-west1-a-0
+gce-mongo-dev-priv-us-west1-b-1
+
+
