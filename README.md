@@ -26,7 +26,7 @@ servers are co-located with the shards. The mongos servers are best deployed on 
   - The default directory for storing data is /data, please do change it if required. Make sure it has sufficient space: 10G is recommended.
 - Set a unique mongod_port variable in the inventory file for each MongoDB server.
 - If using Vagrant to provision a local cluster edit the 'Vagrantfile' and set distribution to use with 'node.vm.box' and proper vm box memory settings with 'vb.memory'.
-- If using Terraform to provision a cluster in AWS or Google Cloud edit the 'vars.tf', 'main.tf' and corresponding hosts file './mongodb/hosts-aws-dev' or './mongodb/hosts-gce-dev'.
+- If using Terraform to provision a cluster in Amazon Cloud (AWS) or Google Cloud (GCP) edit the 'vars.tf', 'main.tf' and corresponding hosts file './mongodb/hosts-aws-dev' or './mongodb/hosts-gce-dev'.
 - **Note** that all the processes are secured using [keyfiles](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/) which is fine for a dev/testing environment. Production environments should consider using [X.509 Certificates](https://docs.mongodb.com/manual/core/security-x.509/). 
 - **Note** that all the processes bind to all IP addresses. Consider [enabling access control](https://docs.mongodb.com/manual/administration/security-checklist/#checklist-auth) and other security measures listed in [Security Checklist](https://docs.mongodb.com/manual/administration/security-checklist/) to prevent unauthorized access.
 
@@ -82,29 +82,42 @@ Run the shard test playbook on local vagrant hosts using the following commands:
 
 Provision the site by **terraform** using the following commands:
 
-	Google Cloud:
+	Google Cloud (GCP):
 	  terraform plan  --target=google_compute_instance.gce-mongo-1
 	  terraform apply --target=google_compute_instance.gce-mongo-1
 
-	AWS Cloud:
+	Amazon Cloud (AWS):
 	  terraform plan  --target=aws_instance.ec2-mongo-1
 	  terraform apply --target=aws_instance.ec2-mongo-1
 
 Build the site by **provsioned by terraform** using the following command:
 
-	Google Cloud:
+	Google Cloud (GCP):
 	  ansible-playbook -i ./mongodb/hosts-gce-dev ./mongodb/site.yml
 
-	AWS Cloud:
+	Amazon Cloud (AWS):
 	  ansible-playbook -i ./mongodb/hosts-aws-dev ./mongodb/site.yml
 
 Run the shard test playbook on cloud hosts using the following commands:
 
-	Google Cloud:
+	Google Cloud (GCP):
 	  ansible-playbook -i ./mongodb/hosts-gce-dev ./mongodb/shard_test.yml --extra-vars "mongos_host=<insert mongos hostname from ./mongodb/hosts-gce-dev>"
 
-	AWS Cloud:
+	Amazon Cloud (AWS):
 	  ansible-playbook -i ./mongodb/hosts-aws-dev ./mongodb/shard_test.yml --extra-vars "mongos_host=<insert mongos hostname from ./mongodb/hosts-aws-dev>"
+
+Clean up and destroy **vagrant** deploy resources using following command:
+
+	vagrant destroy
+
+Clean up and destroy **terraform** deployed cloud resources using following commands:
+
+	Google Cloud (GCP):
+	  terraform destroy --target=google_compute_instance.gce-mongo-1
+	  terraform destroy --target=google_compute_disk.disk-sdb-mongo-1
+
+	Amazon Cloud (AWS):
+	  terraform destroy --target=aws_instance.ec2-mongo-1
 
 ### Verifying the Deployment  
 ------------------------------------------------------------------------------
