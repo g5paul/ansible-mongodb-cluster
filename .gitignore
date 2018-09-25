@@ -7,3 +7,4 @@ packages/*
 mongodb/shard_test.retry
 mongodb/site.retry
 ubuntu-xenial-16.04-cloudimg-console.log
+*~

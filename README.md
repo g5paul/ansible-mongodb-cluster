@@ -6,11 +6,14 @@ Example of Deploying a MongoDB (3.6+/4.0+) sharded cluster with Ansible (2.6.3+)
 - Tested with Ubuntu 16.04/xenial
 - Tested with Debian 9/stretch
 - Vagrant support tested with 1.9.8
-- Terrafrom support test with Terraform v0.11.8
+- Terrafrom support tested with Terraform v0.11.8
    - provider.aws v1.36.0
    - provider.google v1.17.1
+- Docker Compose support tested on Host OS Ubuntu 16.04.5 LTS with Container OS Centos 7
+   - Docker version 18.06.0-ce
+   - docker-compose version 1.8.0
 
-Example forked from  [ansible mongodb cluster](https://github.com/twoyao/ansible-mongodb-cluster) which was originally re-written from [ansible mongodb example](https://github.com/ansible/ansible-examples/tree/master/mongodb). Example updated with support for mongodb 3.6.7 & 4.0.2, ansible 2.6.3, CentOS 7, Ubuntu 16.04/xenial and Debian 9/stretch. Added terraform examples for AWS and Google Cloud.
+Example forked from  [ansible mongodb cluster](https://github.com/twoyao/ansible-mongodb-cluster) which was originally re-written from [ansible mongodb example](https://github.com/ansible/ansible-examples/tree/master/mongodb). Example updated with support for mongodb 3.6.7 & 4.0.2, ansible 2.6.3, CentOS 7, Ubuntu 16.04/xenial and Debian 9/stretch. Added terraform examples for AWS and Google Cloud. Added Docker Compose example.
 
 ![Alt text](images/site.png "Site")
 
@@ -27,6 +30,7 @@ servers are co-located with the shards. The mongos servers are best deployed on 
 - Set a unique mongod_port variable in the inventory file for each MongoDB server.
 - If using Vagrant to provision a local cluster edit the 'Vagrantfile' and set distribution to use with 'node.vm.box' and proper vm box memory settings with 'vb.memory'.
 - If using Terraform to provision a cluster in Amazon Cloud (AWS) or Google Cloud (GCP) edit the 'vars.tf', 'main.tf' and corresponding hosts file './mongodb/hosts-aws-dev' or './mongodb/hosts-gce-dev'.
+- If using Docker Compose to provision please note that support was only tested on Host OS Ubuntu with Container OS Centos 7. See 'docker/docker-compose.yml' for details. Docker Compose support was inspired and based on [ansible-docker-compose](https://github.com/andymotta/ansible-docker-compose).
 - **Note** that all the processes are secured using [keyfiles](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/) which is fine for a dev/testing environment. Production environments should consider using [X.509 Certificates](https://docs.mongodb.com/manual/core/security-x.509/). 
 - **Note** that all the processes bind to all IP addresses. Consider [enabling access control](https://docs.mongodb.com/manual/administration/security-checklist/#checklist-auth) and other security measures listed in [Security Checklist](https://docs.mongodb.com/manual/administration/security-checklist/) to prevent unauthorized access.
 
@@ -106,7 +110,21 @@ Run the shard test playbook on cloud hosts using the following commands:
 	Amazon Cloud (AWS):
 	  ansible-playbook -i ./mongodb/hosts-aws-dev ./mongodb/shard_test.yml --extra-vars "mongos_host=<insert mongos hostname from ./mongodb/hosts-aws-dev>"
 
-Clean up and destroy **vagrant** deploy resources using following command:
+Provision the site by **docker-compose ** using the following command:
+ 
+	cd docker/
+	docker-compose build
+	docker-compose up -d	
+
+Build the site by **provsioned by docker-compose** using the following command:
+
+	ansible-playbook -i ../mongodb/hosts-docker ../mongodb/site.yml
+
+Run the shard test playbook on docker hosts using the following commands:
+
+	ansible-playbook -i ../mongodb/hosts-docker ../mongodb/shard_test.yml
+
+Clean up and destroy **vagrant** deployed resources using following command:
 
 	vagrant destroy
 
@@ -118,6 +136,10 @@ Clean up and destroy **terraform** deployed cloud resources using following comm
 
 	Amazon Cloud (AWS):
 	  terraform destroy --target=aws_instance.ec2-mongo-1
+
+Clean up and destroy **docker-compose** deployed resources using following command:
+
+	docker-compose down
 
 ### Verifying the Deployment  
 ------------------------------------------------------------------------------

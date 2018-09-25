@@ -1,0 +1,54 @@
+version: '2'
+services:
+  mongo1:
+    build: 
+      context: ./
+      dockerfile: Dockerfile-centos
+    hostname: mongo1
+    networks:
+      mnet1:
+        aliases:
+          - mongo1
+    ports:
+      - "2210:22"
+      - "27017:27017"
+      - "2700:2700"
+    tmpfs:
+      - /run
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro # Needed when running on Ubuntu host
+  mongo2:
+    build: 
+      context: ./
+      dockerfile: Dockerfile-centos
+    hostname: mongo2
+    networks:
+      mnet1:
+        aliases:
+          - mongo2
+    ports:
+      - "2211:22"
+      - "27018:27017"
+      - "2701:2701"
+    tmpfs:
+      - /run
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro # Needed when running on Ubuntu host
+  mongo3:
+    build: 
+      context: ./
+      dockerfile: Dockerfile-centos
+    hostname: mongo3
+    networks:
+      mnet1:
+        aliases:
+          - mongo3
+    ports:
+      - "2212:22"
+      - "2702:2702"
+    tmpfs:
+      - /run
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro # Needed when running on Ubuntu host
+networks:
+  mnet1:
