@@ -110,7 +110,7 @@ Run the shard test playbook on cloud hosts using the following commands:
 	Amazon Cloud (AWS):
 	  ansible-playbook -i ./mongodb/hosts-aws-dev ./mongodb/shard_test.yml --extra-vars "mongos_host=<insert mongos hostname from ./mongodb/hosts-aws-dev>"
 
-Provision the site by **docker-compose ** using the following command:
+Provision the site by **docker-compose** using the following command:
  
 	cd docker/
 	docker-compose build
