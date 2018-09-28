@@ -23,7 +23,6 @@ RUN yum -y update && yum install -y openssh-server && \
     /usr/bin/ssh-keygen -A && \
     systemctl enable sshd.service && \
     mkdir /var/run/sshd && \
-    mkdir -p /tmp/docker.run && \
     useradd ansible -s /bin/bash && \
     mkdir -p /home/ansible/.ssh/ && \
     chmod 0700 /home/ansible/.ssh/ 
