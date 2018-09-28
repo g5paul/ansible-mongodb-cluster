@@ -4,8 +4,8 @@ FROM centos:7
 # for Dockerfile for systemd
 #
 
-RUN yum -y update; yum clean all
-RUN yum -y install systemd; yum clean all
+RUN yum -y update && yum -y install systemd && \ 
+    yum clean all
 
 RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
 systemd-tmpfiles-setup.service ] || rm -f $i; done); \
@@ -18,18 +18,20 @@ rm -f /lib/systemd/system/basic.target.wants/*;\
 rm -f /lib/systemd/system/anaconda.target.wants/*;
 VOLUME [ "/sys/fs/cgroup" ]
 
-RUN yum install -y openssh-server && \
+RUN yum -y update && yum install -y openssh-server && \
+    yum clean all && \
     /usr/bin/ssh-keygen -A && \
     systemctl enable sshd.service && \
     mkdir /var/run/sshd && \
     mkdir -p /tmp/docker.run && \
     useradd ansible -s /bin/bash && \
     mkdir -p /home/ansible/.ssh/ && \
-    chmod 0700 /home/ansible/.ssh/
+    chmod 0700 /home/ansible/.ssh/ 
 
-RUN yum install -y sudo && \
+RUN yum -y update && yum install -y sudo && \
     yum install -y procps && \
-    yum install -y iproute
+    yum install -y iproute && \ 
+    yum clean all 
 
 COPY ansible_ssh_config /home/ansible/.ssh/config
 COPY id_rsa_ansible /home/ansible/.ssh/id_rsa
